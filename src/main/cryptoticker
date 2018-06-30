@@ -1,0 +1,5 @@
+#!/bin/bash
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "${SCRIPTDIR}"
+java -jar cryptoticker-1.0.jar
+

@@ -1,0 +1,26 @@
+#!/bin/bash
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "${SCRIPTDIR}"
+
+VERSION="1.0"
+DISTDIR="${SCRIPTDIR}/dist-${VERSION}"
+DISTSRCDIR="${DISTDIR}/cryptoticker-${VERSION}"
+DISTZIPFILE="cryptoticker-${VERSION}.zip"
+
+./clean
+./build
+rm -rf ${DISTDIR}
+mkdir -p ${DISTDIR}
+mkdir -p ${DISTSRCDIR}
+
+if [ -d target ]
+then
+  cd target
+  cp -r readme.txt license.txt cryptoticker cryptoticker-${VERSION}.jar cryptoticker.json lib ${DISTSRCDIR}
+  cd ${DISTSRCDIR}
+  chmod +x cryptoticker
+  cd ${DISTDIR}
+  zip -r ${DISTZIPFILE} cryptoticker-${VERSION}
+  cd ${SCRIPTDIR}
+fi
+
