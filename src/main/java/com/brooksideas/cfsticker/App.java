@@ -1,4 +1,4 @@
-package com.brooksideas.cryptoticker;
+package com.brooksideas.cfsticker;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
- * Cryptoticker
+ * CryptoFiatStockTicker
  *
  * Desktop ticker for cryptocurrencies and stocks.
  *
@@ -51,7 +51,7 @@ public class App {
     private static final String updateButtonLabel = "Update";
     private static final String saveButtonLabel = "Save";
     private static final String closeButtonLabel = "Close";
-    private static final String configFileName = "cryptoticker.json";
+    private static final String configFileName = "cfsticker.json";
     private static final String addImageFileName = "/images/Add16.gif";
     private static final String removeImageFileName = "/images/Delete16.gif";
     private static final String updateImageFileName = "/images/Refresh16.gif";
@@ -620,7 +620,7 @@ public class App {
             ms = "" + m;
         }
 
-        window.setTitle("Cryptoticker " + now.getHour() + ":" + ms);
+        window.setTitle("CryptoFiatStockTicker " + now.getHour() + ":" + ms);
     }
 
     public void saveConfig() {

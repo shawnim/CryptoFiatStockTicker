@@ -2,6 +2,6 @@
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${SCRIPTDIR}"
 cd target
-chmod +x cryptoticker
-./cryptoticker
+chmod +x cfsticker
+./cfsticker
 

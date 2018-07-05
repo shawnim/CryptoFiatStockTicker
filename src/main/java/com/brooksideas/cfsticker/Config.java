@@ -1,9 +1,9 @@
-package com.brooksideas.cryptoticker;
+package com.brooksideas.cfsticker;
 
 import java.util.ArrayList;
 
 /**
- * Cryptoticker config
+ * CryptoFiatStockTicker config
  */
 public class Config {
     private int updateIntervalSeconds;

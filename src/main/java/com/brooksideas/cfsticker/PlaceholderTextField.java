@@ -1,4 +1,4 @@
-package com.brooksideas.cryptoticker;
+package com.brooksideas.cfsticker;
 
 import java.awt.*;
 import javax.swing.*;

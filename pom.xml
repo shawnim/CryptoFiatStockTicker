@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.brooksideas.cryptoticker</groupId>
-  <artifactId>cryptoticker</artifactId>
+  <groupId>com.brooksideas</groupId>
+  <artifactId>cfsticker</artifactId>
   <packaging>jar</packaging>
-  <version>1.0</version>
-  <name>cryptoticker</name>
+  <version>1.1</version>
+  <name>cfsticker</name>
   <url>https://brooksideas.com</url>
   <build>
     <plugins>
@@ -19,7 +19,7 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <classpathPrefix>lib/</classpathPrefix>
-              <mainClass>com.brooksideas.cryptoticker.App</mainClass>
+              <mainClass>com.brooksideas.cfsticker.App</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -49,8 +49,8 @@
         <directory>${project.basedir}/src/main</directory>
         <targetPath>${project.build.directory}</targetPath>
         <includes>
-          <include>cryptoticker</include>
-          <include>cryptoticker.json</include>
+          <include>cfsticker</include>
+          <include>cfsticker.json</include>
           <include>readme.txt</include>
           <include>license.txt</include>
         </includes>

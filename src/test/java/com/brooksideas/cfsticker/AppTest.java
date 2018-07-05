@@ -1,4 +1,4 @@
-package com.brooksideas.cryptoticker;
+package com.brooksideas.cfsticker;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

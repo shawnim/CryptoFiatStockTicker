@@ -2,10 +2,10 @@
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${SCRIPTDIR}"
 
-VERSION="1.0"
+VERSION="1.1"
 DISTDIR="${SCRIPTDIR}/dist-${VERSION}"
-DISTSRCDIR="${DISTDIR}/cryptoticker-${VERSION}"
-DISTZIPFILE="cryptoticker-${VERSION}.zip"
+DISTSRCDIR="${DISTDIR}/cfsticker-${VERSION}"
+DISTZIPFILE="cfsticker-${VERSION}.zip"
 
 ./clean
 ./build
@@ -16,11 +16,11 @@ mkdir -p ${DISTSRCDIR}
 if [ -d target ]
 then
   cd target
-  cp -r readme.txt license.txt cryptoticker cryptoticker-${VERSION}.jar cryptoticker.json lib ${DISTSRCDIR}
+  cp -r readme.txt license.txt cfsticker cfsticker-${VERSION}.jar cfsticker.json lib ${DISTSRCDIR}
   cd ${DISTSRCDIR}
-  chmod +x cryptoticker
+  chmod +x cfsticker
   cd ${DISTDIR}
-  zip -r ${DISTZIPFILE} cryptoticker-${VERSION}
+  zip -r ${DISTZIPFILE} cfsticker-${VERSION}
   cd ${SCRIPTDIR}
 fi
 
