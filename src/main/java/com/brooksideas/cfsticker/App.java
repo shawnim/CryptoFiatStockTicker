@@ -763,7 +763,7 @@ public class App {
 
     private double getStockPercentChange24h(Map<String, Object> map) {
         // iex 5% = 0.05
-        cp = map.get("changePercent");
+        Object cp = map.get("changePercent");
         double percentChange24h = 0.0;
         if (cp instanceof Double) {
             Double dPercentChange24h = (Double)map.get("changePercent");
