@@ -762,9 +762,17 @@ public class App {
     }
 
     private double getStockPercentChange24h(Map<String, Object> map) {
-        Double dPercentChange24h = (Double)map.get("changePercent");
         // iex 5% = 0.05
-        double percentChange24h = dPercentChange24h.doubleValue() * 100.0;
+        cp = map.get("changePercent");
+        double percentChange24h = 0.0;
+        if (cp instanceof Double) {
+            Double dPercentChange24h = (Double)map.get("changePercent");
+            percentChange24h = dPercentChange24h.doubleValue() * 100.0;
+        } else if (cp instanceof Integer) {
+            Integer iPercentChange24h = (Integer)map.get("changePercent");
+            percentChange24h = (double)iPercentChange24h.intValue() * 100.0;
+        }
+
         return percentChange24h;
     }
 
