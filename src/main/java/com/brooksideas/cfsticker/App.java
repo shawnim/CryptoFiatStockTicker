@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 /**
  * CryptoFiatStockTicker
  *
- * Desktop ticker for cryptocurrencies and stocks.
+ * Desktop ticker for cryptocurrencies, fiat/forex and stocks.
  *
  * Cryptocurrency data provided by coinmarketcap.com.
  * Stock Data provided for free by IEX. View IEX’s Terms of Use.
@@ -43,8 +43,12 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 public class App {
     private static final String cmcTickerUrl = "https://api.coinmarketcap.com/v2/ticker/";
     private static final String cmcListingsUrl = "https://api.coinmarketcap.com/v2/listings";
+    private static final String ccaBaseUrl = "https://free.currencyconverterapi.com/api/v5/convert?q=";
+    private static final String ccaTailUrl = "_USD&compact=y";
     private static final String iexBaseUrl = "https://api.iextrading.com/1.0/stock/";
+    private static final String iexTailUrl = "/quote";
     private static final String cryptoRadioLabel = "Crypto";
+    private static final String fiatRadioLabel = "Fiat";
     private static final String stockRadioLabel = "Stock";
     private static final String addButtonLabel = "Add";
     private static final String removeButtonLabel = "Remove";
@@ -65,6 +69,7 @@ public class App {
     private Config config;
     private TreeMap<String, CryptoListing> cryptoListings;
     private TreeMap<String, CryptoQuote> cryptoQuotes;
+    private TreeMap<String, FiatQuote> fiatQuotes;
     private TreeMap<String, StockQuote> stockQuotes;
     private PlaceholderTextField symbolTextField;
     private HashMap<String, JPanel> tickerPanels;
@@ -72,6 +77,8 @@ public class App {
     private HashMap<String, JLabel> priceLabels;
     private Color upColor;
     private Color downColor;
+    private boolean isCrypto;
+    private boolean isFiat;
     private boolean isStock;
     private int gridx;
     private int updateIntervalSeconds;
@@ -128,6 +135,15 @@ public class App {
             }
         }
 
+        // Initial fiats
+        fiatQuotes = new TreeMap<String, FiatQuote>();
+        ArrayList<String> fiats = config.getFiats();
+
+        for (String fiat : fiats) {
+            symbol = fiat.toUpperCase();
+            fiatQuotes.put(symbol, new FiatQuote(symbol));
+        }
+
         // Initial stocks
         stockQuotes = new TreeMap<String, StockQuote>();
         ArrayList<String> stocks = config.getStocks();
@@ -178,6 +194,8 @@ public class App {
 
         // Radio buttons
         RadioListener radioListener = new RadioListener();
+        isCrypto = true;
+        isFiat = false;
         isStock = false;
 
         // Crypto button
@@ -195,6 +213,19 @@ public class App {
         actionGbc.gridheight = 1;
         actionPanel.add(cryptoButton, actionGbc);
 
+        // Fiat button
+        text = "<html><span style=\"font-size: 0.8em\">" + fiatRadioLabel + "</span></html>";
+        JRadioButton fiatButton = new JRadioButton(text);
+        fiatButton.setForeground(Color.white);
+        fiatButton.setBackground(Color.black);
+        fiatButton.setActionCommand(fiatRadioLabel);
+        fiatButton.addActionListener(radioListener);
+        actionGbc.gridx = 0;
+        actionGbc.gridy = 2;
+        actionGbc.gridwidth = 1;
+        actionGbc.gridheight = 1;
+        actionPanel.add(fiatButton, actionGbc);
+
         // Stock button
         text = "<html><span style=\"font-size: 0.8em\">" + stockRadioLabel + "</span></html>";
         JRadioButton stockButton = new JRadioButton(text);
@@ -202,7 +233,7 @@ public class App {
         stockButton.setBackground(Color.black);
         stockButton.setActionCommand(stockRadioLabel);
         stockButton.addActionListener(radioListener);
-        actionGbc.gridx = 0;
+        actionGbc.gridx = 1;
         actionGbc.gridy = 2;
         actionGbc.gridwidth = 1;
         actionGbc.gridheight = 1;
@@ -211,6 +242,7 @@ public class App {
         // Radio button group
         ButtonGroup radioGroup = new ButtonGroup();
         radioGroup.add(cryptoButton);
+        radioGroup.add(fiatButton);
         radioGroup.add(stockButton);
 
         // Action buttons
@@ -352,6 +384,15 @@ public class App {
             gridx++;
         }
 
+        // Fiat tickers
+        for (Map.Entry<String, FiatQuote> entry : fiatQuotes.entrySet()) {
+            symbol = entry.getKey();
+            tickerPanel = createTicker(symbol);
+            mainGbc.gridx = gridx;
+            mainPanel.add(tickerPanel, mainGbc);
+            gridx++;
+        }
+
         // Stock tickers
         for (Map.Entry<String, StockQuote> entry : stockQuotes.entrySet()) {
             symbol = entry.getKey();
@@ -383,6 +424,7 @@ public class App {
 
     public void updateAll() {
         getCryptoQuotes();
+        getFiatQuotes();
         getStockQuotes();
         updateTickers();
         updateWindow();
@@ -469,6 +511,45 @@ public class App {
         }
     }
 
+    public void getFiatQuotes() {
+        URL url = null;
+        String symbol = "";
+        FiatQuote fiatQuote = null;
+        Map<String, Object> map = null;
+        String name = "";
+        double price = 0.0;
+        double marketCap = 0.0;
+        double percentChange24h = 0.0;
+
+        for (Map.Entry<String, FiatQuote> entry : fiatQuotes.entrySet()) {
+            symbol = entry.getKey();
+            fiatQuote = entry.getValue();
+
+            try {
+                String ccaUrl = ccaBaseUrl + symbol + ccaTailUrl;
+System.out.println("ccaUrl: " + ccaUrl);
+                url = new URL(ccaUrl);
+            } catch (MalformedURLException mfue) {
+                System.err.println(mfue);
+                continue;
+            }
+
+            try {
+                map = mapper.readValue(url, Map.class);
+            } catch (IOException ioe) {
+                System.err.println(ioe);
+                continue;
+            }
+
+            fiatQuote.setName(name);
+            String quoteName = symbol + "_USD";
+            price = getFiatPrice(map, quoteName);
+            fiatQuote.setPrice(price);
+            fiatQuote.setMarketCap(marketCap);
+            fiatQuote.setPercentChange24h(percentChange24h);
+        }
+    }
+
     public void getStockQuotes() {
         URL url = null;
         String symbol = "";
@@ -484,7 +565,8 @@ public class App {
             stockQuote = entry.getValue();
 
             try {
-                url = new URL(iexBaseUrl + symbol + "/quote");
+                String iexUrl = iexBaseUrl + symbol + iexTailUrl;
+                url = new URL(iexUrl);
             } catch (MalformedURLException mfue) {
                 System.err.println(mfue);
                 continue;
@@ -514,6 +596,7 @@ public class App {
     public void updateTickers() {
         String symbol;
         CryptoQuote cryptoQuote;
+        FiatQuote fiatQuote;
         StockQuote stockQuote;
         String name;
         int rank;
@@ -538,6 +621,48 @@ public class App {
 
             // Symbol label
             text = "<html><b>" + symbol + "</b><sup>" + rank + "</sup></html>";
+            JLabel symbolLabel = symbolLabels.get(symbol);
+
+            if (symbolLabel != null) {
+                symbolLabel.setText(text);
+            } else {
+                System.err.println("Could not find symbolLabel for symbol: " + symbol);
+                continue;
+            }
+
+            // Price label
+            text = "<html><p style=\"text-align: center\"><span style=\"font-size: 1.3em\"><b>" + sPrice + "</b></span><br/><span style=\"font-size: 0.8em\">" + sMarketCap + "</span></p></html>";
+            JLabel priceLabel = priceLabels.get(symbol);
+
+            if (priceLabel != null) {
+                priceLabel.setText(text);
+            } else {
+                System.err.println("Could not find priceLabel for symbol: " + symbol);
+                continue;
+            }
+
+            if (percentChange24h > 0.5) {
+                priceLabel.setForeground(upColor);
+            } else if (percentChange24h < -0.5) {
+                priceLabel.setForeground(downColor);
+            } else {
+                priceLabel.setForeground(Color.white);
+            }
+        }
+
+        // Fiats
+        for (Map.Entry<String, FiatQuote> entry : fiatQuotes.entrySet()) {
+            symbol = entry.getKey();
+            fiatQuote = entry.getValue();
+            name = fiatQuote.getName();
+            price = fiatQuote.getPrice();
+            sPrice = formatPrice(price);
+            marketCap = fiatQuote.getMarketCap();
+            sMarketCap = formatMarketCap(marketCap);
+            percentChange24h = fiatQuote.getPercentChange24h();
+
+            // Symbol label
+            text = "<html><b>" + symbol + "</b></html>";
             JLabel symbolLabel = symbolLabels.get(symbol);
 
             if (symbolLabel != null) {
@@ -611,7 +736,7 @@ public class App {
     }
 
     public void updateWindow() {
-        int tickerCount = cryptoQuotes.size() + stockQuotes.size();
+        int tickerCount = cryptoQuotes.size() + fiatQuotes.size() + stockQuotes.size();
         window.setSize(150 + (tickerCount * 65), 80);
         LocalDateTime now = LocalDateTime.now();
         int m = now.getMinute();
@@ -721,6 +846,27 @@ public class App {
         // cmc 5% = 5.0
         double percentChange24h = dPercentChange24h.doubleValue();
         return percentChange24h;
+    }
+
+    private double getFiatPrice(Map<String, Object> map, String quoteName) {
+System.out.println("map: " + map);
+System.out.println("quoteName: " + quoteName);
+        Map<String, Object> quote = (Map<String, Object>)map.get(quoteName);
+System.out.println("quote: " + quote);
+        Double dPrice = (Double)quote.get("val");
+System.out.println("dPrice: " + dPrice);
+        double price = dPrice.doubleValue();
+        double rounded = 0.0;
+
+        if (price >= 100.0) {
+            rounded = Math.round(price);
+        } else if (price >= 1.0) {
+            rounded = Math.round(price * 100.0) / 100.0;
+        } else {
+            rounded = Math.round(price * 1000.0) / 1000.0;
+        }
+
+        return rounded;
     }
 
     private String getStockName(Map<String, Object> map) {
@@ -851,7 +997,10 @@ public class App {
         if (isStock) {
             stockQuotes.put(symbol, new StockQuote(symbol));
             config.addStock(symbol);
-        } else {
+        } else if (isFiat) {
+            fiatQuotes.put(symbol, new FiatQuote(symbol));
+            config.addFiat(symbol);
+        } else if (isCrypto) {
             String cmcId = getCmcId(symbol);
 
             if (cmcId != null) {
@@ -886,7 +1035,15 @@ public class App {
                 System.err.println("Cannot remove stock symbol: " + symbol);
                 return;
             }
-        } else {
+        } else if (isFiat) {
+            if (fiatQuotes.containsKey(symbol)) {
+                fiatQuotes.remove(symbol);
+                config.removeFiat(symbol);
+            } else {
+                System.err.println("Cannot remove fiat symbol: " + symbol);
+                return;
+            }
+        } else if (isCrypto) {
             if (cryptoQuotes.containsKey(symbol)) {
                 cryptoQuotes.remove(symbol);
                 config.removeCrypto(symbol);
@@ -959,7 +1116,15 @@ public class App {
                     // Add stock
                     addSymbol(symbol);
                 }
-            } else {
+            } else if (isFiat) {
+                if (fiatQuotes.containsKey(symbol)) {
+                    // Remove fiat
+                    removeSymbol(symbol);
+                } else {
+                    // Add fiat
+                    addSymbol(symbol);
+                }
+            } else if (isCrypto) {
                 if (cryptoQuotes.containsKey(symbol)) {
                     // Remove crypto
                     removeSymbol(symbol);
@@ -978,8 +1143,16 @@ public class App {
             String radio = e.getActionCommand();
             if (stockRadioLabel.equals(radio)) {
                 isStock = true;
-            } else {
+                isFiat = false;
+                isCrypto = false;
+            } else if (fiatRadioLabel.equals(radio)) {
                 isStock = false;
+                isFiat = true;
+                isCrypto = false;
+            } else if (cryptoRadioLabel.equals(radio)) {
+                isStock = false;
+                isFiat = false;
+                isCrypto = true;
             }
 
             symbolTextField.requestFocusInWindow();
@@ -1041,6 +1214,36 @@ public class App {
         public void setPercentChange24h(double x) { percentChange24h = x; }
     }
 
+    private class FiatQuote {
+        private String symbol;
+        private String name;
+        private double price;
+        private double marketCap;
+        private double percentChange24h;
+
+        public FiatQuote() {
+        }
+
+        public FiatQuote(String symbol) {
+            this.symbol = symbol;
+        }
+
+        public String getSymbol() { return symbol; }
+        public void setSymbol(String x) { symbol = x; }
+
+        public String getName() { return name; }
+        public void setName(String x) { name = x; }
+
+        public double getPrice() { return price; }
+        public void setPrice(double x) { price = x; }
+
+        public double getMarketCap() { return marketCap; }
+        public void setMarketCap(double x) { marketCap = x; }
+
+        public double getPercentChange24h() { return percentChange24h; }
+        public void setPercentChange24h(double x) { percentChange24h = x; }
+    }
+
     private class StockQuote {
         private String symbol;
         private String name;
@@ -1055,7 +1258,7 @@ public class App {
             this.symbol = symbol;
         }
 
-        public String getSybol() { return symbol; }
+        public String getSymbol() { return symbol; }
         public void setSymbol(String x) { symbol = x; }
 
         public String getName() { return name; }
@@ -1130,6 +1333,13 @@ coinmarketcap crypto quote sample data
         "error": null
     }
 }
+
+*/
+
+/*
+currencyconverterapi fiat quote sample data
+
+{"EUR_USD":{"val":1.16672}}
 
 */
 
