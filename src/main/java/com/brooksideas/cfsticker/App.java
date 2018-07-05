@@ -372,6 +372,9 @@ public class App {
         // Initial update
         updateAll();
 
+        // Focus
+        symbolTextField.requestFocusInWindow();
+
         // Update every 10 minutes
         Timer timer = new Timer(updateIntervalSeconds * 1000, updateListener);
         timer.setRepeats(true);
@@ -838,6 +841,8 @@ public class App {
     }
 
     public void addSymbol(String symbol) {
+        symbolTextField.setText("");
+
         if (empty(symbol)) {
             System.err.println("Attempt to add empty symbol: " + symbol);
             return;
@@ -866,6 +871,8 @@ public class App {
     }
 
     public void removeSymbol(String symbol) {
+        symbolTextField.setText("");
+
         if (empty(symbol)) {
             System.err.println("Attempt to remove empty symbol: " + symbol);
             return;
@@ -935,6 +942,8 @@ public class App {
                 // Close
                 System.exit(0);
             }
+
+            symbolTextField.requestFocusInWindow();
         }
     }
 
@@ -959,6 +968,8 @@ public class App {
                     addSymbol(symbol);
                 }
             }
+
+            symbolTextField.requestFocusInWindow();
         }
     }
 
@@ -970,6 +981,8 @@ public class App {
             } else {
                 isStock = false;
             }
+
+            symbolTextField.requestFocusInWindow();
         }
     }
 
