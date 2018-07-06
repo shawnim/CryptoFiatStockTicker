@@ -527,7 +527,6 @@ public class App {
 
             try {
                 String ccaUrl = ccaBaseUrl + symbol + ccaTailUrl;
-System.out.println("ccaUrl: " + ccaUrl);
                 url = new URL(ccaUrl);
             } catch (MalformedURLException mfue) {
                 System.err.println(mfue);
@@ -657,8 +656,6 @@ System.out.println("ccaUrl: " + ccaUrl);
             name = fiatQuote.getName();
             price = fiatQuote.getPrice();
             sPrice = formatPrice(price);
-            marketCap = fiatQuote.getMarketCap();
-            sMarketCap = formatMarketCap(marketCap);
             percentChange24h = fiatQuote.getPercentChange24h();
 
             // Symbol label
@@ -673,7 +670,7 @@ System.out.println("ccaUrl: " + ccaUrl);
             }
 
             // Price label
-            text = "<html><p style=\"text-align: center\"><span style=\"font-size: 1.3em\"><b>" + sPrice + "</b></span><br/><span style=\"font-size: 0.8em\">" + sMarketCap + "</span></p></html>";
+            text = "<html><p style=\"text-align: center\"><span style=\"font-size: 1.3em\"><b>" + sPrice + "</b></span><br/><span style=\"font-size: 0.8em\">-</span></p></html>";
             JLabel priceLabel = priceLabels.get(symbol);
 
             if (priceLabel != null) {
@@ -849,12 +846,8 @@ System.out.println("ccaUrl: " + ccaUrl);
     }
 
     private double getFiatPrice(Map<String, Object> map, String quoteName) {
-System.out.println("map: " + map);
-System.out.println("quoteName: " + quoteName);
         Map<String, Object> quote = (Map<String, Object>)map.get(quoteName);
-System.out.println("quote: " + quote);
         Double dPrice = (Double)quote.get("val");
-System.out.println("dPrice: " + dPrice);
         double price = dPrice.doubleValue();
         double rounded = 0.0;
 
