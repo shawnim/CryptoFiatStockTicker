@@ -868,16 +868,27 @@ public class App {
     }
 
     private double getStockPrice(Map<String, Object> map) {
-        Double dPrice = (Double)map.get("latestPrice");
-        double price = dPrice.doubleValue();
+        Object oPrice = map.get("latestPrice");
+        double dPrice = 0.0;
         double rounded = 0.0;
 
-        if (price >= 100.0) {
-            rounded = Math.round(price);
-        } else if (price >= 1.0) {
-            rounded = Math.round(price * 100.0) / 100.0;
+        if (oPrice instanceof Integer) {
+            Integer iiPrice = (Integer)oPrice;
+            int iPrice = iiPrice.intValue();
+            dPrice = (double)iPrice;
+        } else if (oPrice instanceof Double) {
+            Double ddPrice = (Double)oPrice;
+            dPrice = ddPrice.doubleValue();
         } else {
-            rounded = Math.round(price * 1000.0) / 1000.0;
+            System.err.println("Unknown type for stock price");
+        }
+
+        if (dPrice >= 100.0) {
+            rounded = Math.round(dPrice);
+        } else if (dPrice >= 1.0) {
+            rounded = Math.round(dPrice * 100.0) / 100.0;
+        } else {
+            rounded = Math.round(dPrice * 1000.0) / 1000.0;
         }
 
         return rounded;

@@ -1,5 +1,5 @@
 #!/bin/bash
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${SCRIPTDIR}"
-java -jar cfsticker-1.1.jar
+java -jar cfsticker-1.2.jar
 
