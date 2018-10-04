@@ -365,7 +365,7 @@ public class App {
         mainGbc.gridx = gridx;
         mainGbc.gridy = 0;
         mainGbc.gridwidth = 2;
-        mainGbc.gridheight = 2;
+        mainGbc.gridheight = 3;
         mainPanel.add(actionPanel, mainGbc);
 
         // Tickers
@@ -734,7 +734,7 @@ public class App {
 
     public void updateWindow() {
         int tickerCount = cryptoQuotes.size() + fiatQuotes.size() + stockQuotes.size();
-        window.setSize(150 + (tickerCount * 65), 80);
+        window.setSize(150 + (tickerCount * 65), 110);
         LocalDateTime now = LocalDateTime.now();
         int m = now.getMinute();
         String ms;
