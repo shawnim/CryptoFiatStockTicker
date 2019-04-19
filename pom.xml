@@ -4,7 +4,7 @@
   <groupId>com.brooksideas</groupId>
   <artifactId>cfsticker</artifactId>
   <packaging>jar</packaging>
-  <version>1.3</version>
+  <version>1.4</version>
   <name>cfsticker</name>
   <url>https://brooksideas.com</url>
   <properties>

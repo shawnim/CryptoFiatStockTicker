@@ -43,8 +43,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 public class App {
     private static final String cmcTickerUrl = "https://api.coinmarketcap.com/v2/ticker/";
     private static final String cmcListingsUrl = "https://api.coinmarketcap.com/v2/listings";
-    private static final String ccaBaseUrl = "https://free.currencyconverterapi.com/api/v5/convert?q=";
-    private static final String ccaTailUrl = "_USD&compact=y";
+    private static final String ccaBaseUrl = "https://free.currencyconverterapi.com/api/v6/convert?q=";
+    // XXX add configuration for people to set their own keys
+    private static final String ccaApiKey = "4524e732bd5b0a125958";
+    private static final String ccaTailUrl = "_USD&compact=y&apiKey=" + ccaApiKey;
     private static final String iexBaseUrl = "https://api.iextrading.com/1.0/stock/";
     private static final String iexTailUrl = "/quote";
     private static final String cryptoRadioLabel = "Crypto";
