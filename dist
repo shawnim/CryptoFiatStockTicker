@@ -2,7 +2,7 @@
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${SCRIPTDIR}"
 
-VERSION="1.4"
+VERSION="1.5"
 DISTDIR="${SCRIPTDIR}/dist-${VERSION}"
 DISTSRCDIR="${DISTDIR}/cfsticker-${VERSION}"
 DISTZIPFILE="cfsticker-${VERSION}.zip"

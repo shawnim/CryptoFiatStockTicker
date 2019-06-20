@@ -27,9 +27,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  *
  * Cryptocurrency data provided by coinmarketcap.com.
  * Stock Data provided for free by IEX. View IEX’s Terms of Use.
- * iextrading.com
+ * iextrading.com iexcloud.io
  *
- * Copyright 2018 Shawn McMurdo
+ * Copyright 2019 Shawn McMurdo
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  *
@@ -47,8 +47,9 @@ public class App {
     // XXX add configuration for people to set their own keys
     private static final String ccaApiKey = "4524e732bd5b0a125958";
     private static final String ccaTailUrl = "_USD&compact=y&apiKey=" + ccaApiKey;
-    private static final String iexBaseUrl = "https://api.iextrading.com/1.0/stock/";
-    private static final String iexTailUrl = "/quote";
+    private static final String iexApiKey = "pk_23b0042f655a4a729318ddac580d182b";
+    private static final String iexBaseUrl = "https://cloud.iexapis.com/v1/stock/";
+    private static final String iexTailUrl = "/quote/?token=" + iexApiKey;
     private static final String cryptoRadioLabel = "Crypto";
     private static final String fiatRadioLabel = "Fiat";
     private static final String stockRadioLabel = "Stock";
@@ -900,6 +901,10 @@ public class App {
         Object oMarketCap = map.get("marketCap");
         double roundedM = 0.0;
 
+        if (oMarketCap == null) {
+            return roundedM;
+        }
+
         if (oMarketCap instanceof Long) {
             Long llMarketCap = (Long)oMarketCap;
             long lMarketCap = llMarketCap.longValue();
@@ -1350,49 +1355,49 @@ currencyconverterapi fiat quote sample data
 */
 
 /*
-iextrading stock quote sample data
+iexcloud.io stock quote sample data
 
-{"symbol":"IMGN",
-"companyName":"ImmunoGen Inc.",
-"primaryExchange":"Nasdaq Global Select",
-"sector":"Healthcare",
+https://cloud.iexapis.com/v1/stock/qqq/quote/?token=pk_23b0042f655a4a729318ddac580d182b
+
+{"symbol":"QQQ",
+"companyName":"Invesco QQQ Trust",
 "calculationPrice":"close",
-"open":10.43,
-"openTime":1529069400456,
-"close":10.01,
-"closeTime":1529092800695,
-"high":10.76,
-"low":9.93,
-"latestPrice":10.01,
+"open":186.66,
+"openTime":1560951000327,
+"close":187.11,
+"closeTime":1560974400350,
+"high":187.53,
+"low":185.57,
+"latestPrice":187.11,
 "latestSource":"Close",
-"latestTime":"June 15,
- 2018",
-"latestUpdate":1529092800695,
-"latestVolume":5373333,
-"iexRealtimePrice":10.01,
-"iexRealtimeSize":121,
-"iexLastUpdated":1529092799533,
-"delayedPrice":10.01,
-"delayedPriceTime":1529092800695,
-"extendedPrice":10.15,
-"extendedChange":0.14,
-"extendedChangePercent":0.01399,
-"extendedPriceTime":1529096388244,
-"previousClose":10.49,
-"change":-0.48,
-"changePercent":-0.04576,
-"iexMarketPercent":0.0108,
-"iexVolume":58032,
-"avgTotalVolume":2606606,
+"latestTime":"June 19,
+ 2019",
+"latestUpdate":1560974400350,
+"latestVolume":31665176,
+"iexRealtimePrice":187.12,
+"iexRealtimeSize":400,
+"iexLastUpdated":1560974399579,
+"delayedPrice":187.11,
+"delayedPriceTime":1560974400350,
+"extendedPrice":187.8,
+"extendedChange":0.69,
+"extendedChangePercent":0.00369,
+"extendedPriceTime":1560987863464,
+"previousClose":186.41,
+"change":0.7,
+"changePercent":0.00376,
+"iexMarketPercent":0.01111770229857557,
+"iexVolume":352044,
+"avgTotalVolume":40442117,
 "iexBidPrice":0,
 "iexBidSize":0,
 "iexAskPrice":0,
 "iexAskSize":0,
-"marketCap":1468836829,
-"peRatio":-8.63,
-"week52High":13.41,
-"week52Low":4.355,
-"ytdChange":0.4549553075822603}
+"marketCap":0,
+"peRatio":null,
+"week52High":191.32,
+"week52Low":143.46,
+"ytdChange":0.20733700000000002}
 
 */
 
