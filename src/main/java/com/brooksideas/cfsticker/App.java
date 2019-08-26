@@ -41,13 +41,17 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  *
  */
 public class App {
-    private static final String cmcTickerUrl = "https://api.coinmarketcap.com/v2/ticker/";
-    private static final String cmcListingsUrl = "https://api.coinmarketcap.com/v2/listings";
-    private static final String ccaBaseUrl = "https://free.currencyconverterapi.com/api/v6/convert?q=";
     // XXX add configuration for people to set their own keys
+    // XXX To get cmc api key sign up at
+    // XXX https://pro.coinmarketcap.com/signup/?plan=0
+    private static final String cmcApiKey = "5c25d932-696d-4113-8fbf-36848aa95d61";
     private static final String ccaApiKey = "4524e732bd5b0a125958";
-    private static final String ccaTailUrl = "_USD&compact=y&apiKey=" + ccaApiKey;
     private static final String iexApiKey = "pk_23b0042f655a4a729318ddac580d182b";
+    private static final String cmcTickerUrl = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=";
+    // XXX Should use header X-CMC_PRO_API_KEY instead of query arg
+    private static final String cmcTailUrl = "&convert=USD&aux=cmc_rank,market_cap_by_total_supply&CMC_PRO_API_KEY=" + cmcApiKey;
+    private static final String ccaBaseUrl = "https://free.currencyconverterapi.com/api/v6/convert?q=";
+    private static final String ccaTailUrl = "_USD&compact=y&apiKey=" + ccaApiKey;
     private static final String iexBaseUrl = "https://cloud.iexapis.com/v1/stock/";
     private static final String iexTailUrl = "/quote/?token=" + iexApiKey;
     private static final String cryptoRadioLabel = "Crypto";
@@ -70,7 +74,6 @@ public class App {
     private GridBagConstraints mainGbc;
     private ObjectMapper mapper;
     private Config config;
-    private TreeMap<String, CryptoListing> cryptoListings;
     private TreeMap<String, CryptoQuote> cryptoQuotes;
     private TreeMap<String, FiatQuote> fiatQuotes;
     private TreeMap<String, StockQuote> stockQuotes;
@@ -93,7 +96,6 @@ public class App {
 
     public void run() {
         String symbol;
-        String cmcId;
         String text;
 
         // JSON response mapper
@@ -107,10 +109,6 @@ public class App {
             System.err.println(ioe);
             System.exit(1);
         }
-
-        // CryptoListings
-        cryptoListings = new TreeMap<String, CryptoListing>();
-        getCryptoListings();
 
         // Colors
         upColor = new Color(0x00ff00);
@@ -131,11 +129,7 @@ public class App {
 
         for (String crypto : cryptos) {
             symbol = crypto.toUpperCase();
-            cmcId = getCmcId(symbol);
-
-            if (cmcId != null) {
-                cryptoQuotes.put(symbol, new CryptoQuote(symbol, cmcId));
-            }
+            cryptoQuotes.put(symbol, new CryptoQuote(symbol));
         }
 
         // Initial fiats
@@ -433,45 +427,12 @@ public class App {
         updateWindow();
     }
 
-    public void getCryptoListings() {
-        Map<String, Object> map = null;
-        URL url = null;
-
-        try {
-            url = new URL(cmcListingsUrl);
-        } catch (MalformedURLException mfue) {
-            System.err.println(mfue);
-            System.exit(1);
-        }
-
-        try {
-            map = mapper.readValue(url, Map.class);
-        } catch (IOException ioe) {
-            System.err.println(ioe);
-            System.exit(1);
-        }
-
-        ArrayList<Map<String, Object>> data = (ArrayList<Map<String, Object>>)map.get("data");
-        String symbol;
-        String cmcId;
-        String name;
-        CryptoListing listing;
-
-        for (Map<String, Object> d : data) {
-            symbol = (String)d.get("symbol");
-            cmcId = "" + (Integer)d.get("id");
-            name = (String)d.get("name");
-            listing = new CryptoListing(symbol, cmcId, name);
-            cryptoListings.put(symbol, listing);
-        }
-    }
-
     public void getCryptoQuotes() {
         URL url = null;
         String symbol = "";
-        String cmcId = "";
         CryptoQuote cryptoQuote = null;
         Map<String, Object> map = null;
+        int errorCode = 0;
         String name = "";
         int rank = 0;
         double price = 0.0;
@@ -481,10 +442,10 @@ public class App {
         for (Map.Entry<String, CryptoQuote> entry : cryptoQuotes.entrySet()) {
             symbol = entry.getKey();
             cryptoQuote = entry.getValue();
-            cmcId = cryptoQuote.getCmcId();
 
+            // XXX Build comma separated list and get all with one url
             try {
-                url = new URL(cmcTickerUrl + cmcId);
+                url = new URL(cmcTickerUrl + symbol + cmcTailUrl);
             } catch (MalformedURLException mfue) {
                 System.err.println(mfue);
                 continue;
@@ -497,19 +458,26 @@ public class App {
                 continue;
             }
 
-            name = getCryptoName(map);
+            errorCode = getCryptoErrorCode(map);
+
+            if (errorCode != 0) {
+                System.err.println("Crypto quote request returned error code: " + errorCode);
+                continue;
+            }
+
+            name = getCryptoName(map, symbol);
             cryptoQuote.setName(name);
 
-            rank = getCryptoRank(map);
+            rank = getCryptoRank(map, symbol);
             cryptoQuote.setRank(rank);
 
-            price = getCryptoPrice(map);
+            price = getCryptoPrice(map, symbol);
             cryptoQuote.setPrice(price);
 
-            marketCap = getCryptoMarketCap(map);
+            marketCap = getCryptoMarketCap(map, symbol);
             cryptoQuote.setMarketCap(marketCap);
 
-            percentChange24h = getCryptoPercentChange24h(map);
+            percentChange24h = getCryptoPercentChange24h(map, symbol);
             cryptoQuote.setPercentChange24h(percentChange24h);
         }
     }
@@ -796,23 +764,33 @@ public class App {
         return tickerPanel;
     }
 
-    private String getCryptoName(Map<String, Object> map) {
+    private int getCryptoErrorCode(Map<String, Object> map) {
+        Map<String, Object> status = (Map<String, Object>)map.get("status");
+        Integer iErrorCode = (Integer)status.get("error_code");
+        int errorCode = iErrorCode.intValue();
+        return errorCode;
+    }
+
+    private String getCryptoName(Map<String, Object> map, String symbol) {
         Map<String, Object> data = (Map<String, Object>)map.get("data");
-        String name = (String)data.get("name");
+        Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
+        String name = (String)symbolData.get("name");
         return name;
     }
 
-    private int getCryptoRank(Map<String, Object> map) {
+    private int getCryptoRank(Map<String, Object> map, String symbol) {
         Map<String, Object> data = (Map<String, Object>)map.get("data");
-        Integer iRank = (Integer)data.get("rank");
+        Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
+        Integer iRank = (Integer)symbolData.get("cmc_rank");
         int rank = iRank.intValue();
         return rank;
     }
 
-    private double getCryptoPrice(Map<String, Object> map) {
+    private double getCryptoPrice(Map<String, Object> map, String symbol) {
         Map<String, Object> data = (Map<String, Object>)map.get("data");
-        Map<String, Object> quotes = (Map<String, Object>)data.get("quotes");
-        Map<String, Object> usd = (Map<String, Object>)quotes.get("USD");
+        Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
+        Map<String, Object> quote = (Map<String, Object>)symbolData.get("quote");
+        Map<String, Object> usd = (Map<String, Object>)quote.get("USD");
         Double dPrice = (Double)usd.get("price");
         double price = dPrice.doubleValue();
         double rounded = 0.0;
@@ -828,20 +806,25 @@ public class App {
         return rounded;
     }
 
-    private double getCryptoMarketCap(Map<String, Object> map) {
+    /**
+     * Returns market cap in millions with 2 decimal places.
+     */
+    private double getCryptoMarketCap(Map<String, Object> map, String symbol) {
         Map<String, Object> data = (Map<String, Object>)map.get("data");
-        Map<String, Object> quotes = (Map<String, Object>)data.get("quotes");
-        Map<String, Object> usd = (Map<String, Object>)quotes.get("USD");
+        Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
+        Map<String, Object> quote = (Map<String, Object>)symbolData.get("quote");
+        Map<String, Object> usd = (Map<String, Object>)quote.get("USD");
         Double dMarketCap = (Double)usd.get("market_cap");
         double marketCap = dMarketCap.doubleValue();
-        double roundedM = Math.round(marketCap / 1000000.0);
+        double roundedM = Math.round(marketCap / 10000.0) / 100.0;
         return roundedM;
     }
 
-    private double getCryptoPercentChange24h(Map<String, Object> map) {
+    private double getCryptoPercentChange24h(Map<String, Object> map, String symbol) {
         Map<String, Object> data = (Map<String, Object>)map.get("data");
-        Map<String, Object> quotes = (Map<String, Object>)data.get("quotes");
-        Map<String, Object> usd = (Map<String, Object>)quotes.get("USD");
+        Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
+        Map<String, Object> quote = (Map<String, Object>)symbolData.get("quote");
+        Map<String, Object> usd = (Map<String, Object>)quote.get("USD");
         Double dPercentChange24h = (Double)usd.get("percent_change_24h");
         // cmc 5% = 5.0
         double percentChange24h = dPercentChange24h.doubleValue();
@@ -974,21 +957,6 @@ public class App {
         return sMarketCap;
     }
 
-    private String getCmcId(String symbol) {
-        if (empty(symbol)) {
-            return null;
-        }
-
-        // XXX Look up in listing
-        CryptoListing listing = cryptoListings.get(symbol);
-
-        if (listing != null) {
-            return listing.getCmcId();
-        }
-
-        return null;
-    }
-
     public String getSymbol() {
         return symbolTextField.getText().trim().toUpperCase();
     }
@@ -1012,15 +980,8 @@ public class App {
             fiatQuotes.put(symbol, new FiatQuote(symbol));
             config.addFiat(symbol);
         } else if (isCrypto) {
-            String cmcId = getCmcId(symbol);
-
-            if (cmcId != null) {
-                cryptoQuotes.put(symbol, new CryptoQuote(symbol, cmcId));
-                config.addCrypto(symbol);
-            } else {
-                System.err.println("No id found in listings for crypto symbol: " + symbol);
-                return;
-            }
+            cryptoQuotes.put(symbol, new CryptoQuote(symbol));
+            config.addCrypto(symbol);
         }
 
         JPanel tickerPanel = createTicker(symbol);
@@ -1170,47 +1131,26 @@ public class App {
         }
     }
 
-    private class CryptoListing {
+    private class CryptoQuote {
         protected String symbol;
-        protected String cmcId;
         protected String name;
-
-        public CryptoListing() {
-        }
-
-        public CryptoListing(String symbol, String cmcId, String name) {
-            this.symbol = symbol;
-            this.cmcId = cmcId;
-            this.name = name;
-        }
-
-        public String getSymbol() { return symbol; }
-        public void setSymbol(String x) { symbol = x; }
-
-        public String getCmcId() { return cmcId; }
-        public void setCmcId(String x) { cmcId = x; }
-
-        public String getName() { return name; }
-        public void setName(String x) { name = x; }
-    }
-
-    private class CryptoQuote extends CryptoListing {
         private int rank;
         private double price;
         private double marketCap;
         private double percentChange24h;
 
         public CryptoQuote() {
-            super();
         }
 
-        public CryptoQuote(String symbol, String cmcId) {
-            super(symbol, cmcId, "");
+        public CryptoQuote(String symbol) {
+            this.symbol = symbol;
         }
 
-        public CryptoQuote(CryptoListing listing) {
-            super(listing.getSymbol(), listing.getCmcId(), listing.getName());
-        }
+        public String getSymbol() { return symbol; }
+        public void setSymbol(String x) { symbol = x; }
+
+        public String getName() { return name; }
+        public void setName(String x) { name = x; }
 
         public int getRank() { return rank; }
         public void setRank(int x) { rank = x; }
@@ -1284,64 +1224,148 @@ public class App {
         public double getPercentChange24h() { return percentChange24h; }
         public void setPercentChange24h(double x) { percentChange24h = x; }
     }
-}
 
 /*
-coinmarketcap crypto listings sample data
 
-{
-    "data": [
-        {
-            "id": 1, 
-            "name": "Bitcoin", 
-            "symbol": "BTC", 
-            "website_slug": "bitcoin"
-        }, 
-...
-        {
-            "id": 2835, 
-            "name": "Endor Protocol", 
-            "symbol": "EDR", 
-            "website_slug": "endor-protocol"
-        }
-    ], 
-    "metadata": {
-        "timestamp": 1528046889, 
-        "num_cryptocurrencies": 1639, 
-        "error": null
+// This example uses the Apache HTTPComponents library. 
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class JavaExample {
+
+  private static String apiKey = "b54bcf4d-1bca-4e8e-9a24-22ff2c3d462c";
+
+  public static void main(String[] args) {
+    String uri = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest";
+    List<NameValuePair> paratmers = new ArrayList<NameValuePair>();
+    paratmers.add(new BasicNameValuePair("start","1"));
+    paratmers.add(new BasicNameValuePair("limit","5000"));
+    paratmers.add(new BasicNameValuePair("convert","USD"));
+
+    try {
+      String result = makeAPICall(uri, paratmers);
+      System.out.println(result);
+    } catch (IOException e) {
+      System.out.println("Error: cannont access content - " + e.toString());
+    } catch (URISyntaxException e) {
+      System.out.println("Error: Invalid URL " + e.toString());
     }
-}
+  }
+
+  public static String makeAPICall(String uri, List<NameValuePair> parameters)
+      throws URISyntaxException, IOException {
+    String response_content = "";
+
+    URIBuilder query = new URIBuilder(uri);
+    query.addParameters(parameters);
+
+    CloseableHttpClient client = HttpClients.createDefault();
+    HttpGet request = new HttpGet(query.build());
+
+    request.setHeader(HttpHeaders.ACCEPT, "application/json");
+    request.addHeader("X-CMC_PRO_API_KEY", apiKey);
+
+    CloseableHttpResponse response = client.execute(request);
+
+    try {
+      System.out.println(response.getStatusLine());
+      HttpEntity entity = response.getEntity();
+      response_content = EntityUtils.toString(entity);
+      EntityUtils.consume(entity);
+    } finally {
+      response.close();
+    }
+
+    return response_content;
+  }
 
 */
+}
 
 /*
 coinmarketcap crypto quote sample data
 
 {
+    "status": {
+        "timestamp": "2019-08-25T03:52:39.810Z",
+        "error_code": 0,
+        "error_message": null,
+        "elapsed": 7,
+        "credit_count": 1
+    },
     "data": {
-        "id": 2010, 
-        "name": "Cardano", 
-        "symbol": "ADA", 
-        "website_slug": "cardano", 
-        "rank": 7, 
-        "circulating_supply": 25927070538.0, 
-        "total_supply": 31112483745.0, 
-        "max_supply": 45000000000.0, 
-        "quotes": {
-            "USD": {
-                "price": 0.22743, 
-                "volume_24h": 203214000.0, 
-                "market_cap": 5896593652.0, 
-                "percent_change_1h": -0.26, 
-                "percent_change_24h": 11.36, 
-                "percent_change_7d": 10.55
+        "ADA": {
+            "id": 2010,
+            "name": "Cardano",
+            "symbol": "ADA",
+            "slug": "cardano",
+            "num_market_pairs": 102,
+            "date_added": "2017-10-01T00:00:00.000Z",
+            "tags": [
+                "mineable"
+            ],
+            "max_supply": 45000000000,
+            "circulating_supply": 25927070538,
+            "total_supply": 31112483745,
+            "is_market_cap_included_in_calc": 1,
+            "platform": null,
+            "cmc_rank": 11,
+            "last_updated": "2019-08-25T03:52:05.000Z",
+            "quote": {
+                "USD": {
+                    "price": 0.0525694308162,
+                    "volume_24h": 101258629.075106,
+                    "percent_change_1h": 2.79196,
+                    "percent_change_24h": 6.04116,
+                    "percent_change_7d": 11.2303,
+                    "market_cap": 1362971340.9141283,
+                    "last_updated": "2019-08-25T03:52:05.000Z"
+                }
             }
-        }, 
-        "last_updated": 1527792565
-    }, 
-    "metadata": {
-        "timestamp": 1527792374, 
-        "error": null
+        },
+        "BTC": {
+            "id": 1,
+            "name": "Bitcoin",
+            "symbol": "BTC",
+            "slug": "bitcoin",
+            "num_market_pairs": 7910,
+            "date_added": "2013-04-28T00:00:00.000Z",
+            "tags": [
+                "mineable"
+            ],
+            "max_supply": 21000000,
+            "circulating_supply": 17895425,
+            "total_supply": 17895425,
+            "is_market_cap_included_in_calc": 1,
+            "platform": null,
+            "cmc_rank": 1,
+            "last_updated": "2019-08-25T03:52:26.000Z",
+            "quote": {
+                "USD": {
+                    "price": 10127.994658,
+                    "volume_24h": 15163849995.5894,
+                    "percent_change_1h": -0.0913643,
+                    "percent_change_24h": -2.20153,
+                    "percent_change_7d": -0.510527,
+                    "market_cap": 181244768802.63965,
+                    "last_updated": "2019-08-25T03:52:26.000Z"
+                }
+            }
+        }
     }
 }
 

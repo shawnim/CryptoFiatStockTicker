@@ -1,7 +1,7 @@
 {
     "updateIntervalSeconds": 600,
     "cryptos": [ "ADA", "BLT", "BTC", "EOS", "ETH", "LOOM", "NANO" ],
-    "fiats": [ "EUR" ],
+    "fiats": [ "EUR", "GBP" ],
     "stocks": [ "AMZN", "GOOG", "IMGN", "IQ", "QQQ" ]
 }
 
