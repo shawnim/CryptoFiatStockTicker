@@ -413,7 +413,7 @@ public class App {
         // Focus
         symbolTextField.requestFocusInWindow();
 
-        // Update every 10 minutes
+        // Interval update
         Timer timer = new Timer(updateIntervalSeconds * 1000, updateListener);
         timer.setRepeats(true);
         timer.start();
@@ -774,6 +774,11 @@ public class App {
     private String getCryptoName(Map<String, Object> map, String symbol) {
         Map<String, Object> data = (Map<String, Object>)map.get("data");
         Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
+
+        if (symbolData == null) {
+            return "";
+        }
+
         String name = (String)symbolData.get("name");
         return name;
     }
@@ -815,6 +820,11 @@ public class App {
         Map<String, Object> quote = (Map<String, Object>)symbolData.get("quote");
         Map<String, Object> usd = (Map<String, Object>)quote.get("USD");
         Double dMarketCap = (Double)usd.get("market_cap");
+
+        if (dMarketCap == null) {
+            return 0.0;
+        }
+
         double marketCap = dMarketCap.doubleValue();
         double roundedM = Math.round(marketCap / 10000.0) / 100.0;
         return roundedM;
@@ -826,6 +836,11 @@ public class App {
         Map<String, Object> quote = (Map<String, Object>)symbolData.get("quote");
         Map<String, Object> usd = (Map<String, Object>)quote.get("USD");
         Double dPercentChange24h = (Double)usd.get("percent_change_24h");
+
+        if (dPercentChange24h == null) {
+            return 0.0;
+        }
+
         // cmc 5% = 5.0
         double percentChange24h = dPercentChange24h.doubleValue();
         return percentChange24h;
