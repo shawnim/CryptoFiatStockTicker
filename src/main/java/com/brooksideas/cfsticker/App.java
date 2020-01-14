@@ -796,7 +796,7 @@ public class App {
         Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
         Map<String, Object> quote = (Map<String, Object>)symbolData.get("quote");
         Map<String, Object> usd = (Map<String, Object>)quote.get("USD");
-        Double dPrice = (Double)usd.get("price");
+        Double dPrice = Double.valueOf("" + (usd.get("price")).toString());
         double price = dPrice.doubleValue();
         double rounded = 0.0;
 
@@ -819,7 +819,7 @@ public class App {
         Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
         Map<String, Object> quote = (Map<String, Object>)symbolData.get("quote");
         Map<String, Object> usd = (Map<String, Object>)quote.get("USD");
-        Double dMarketCap = (Double)usd.get("market_cap");
+        Double dMarketCap = Double.valueOf("" + (usd.get("market_cap")).toString());
 
         if (dMarketCap == null) {
             return 0.0;
@@ -835,7 +835,7 @@ public class App {
         Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
         Map<String, Object> quote = (Map<String, Object>)symbolData.get("quote");
         Map<String, Object> usd = (Map<String, Object>)quote.get("USD");
-        Double dPercentChange24h = (Double)usd.get("percent_change_24h");
+        Double dPercentChange24h = Double.valueOf("" + (usd.get("percent_change_24h")).toString());
 
         if (dPercentChange24h == null) {
             return 0.0;
@@ -848,7 +848,7 @@ public class App {
 
     private double getFiatPrice(Map<String, Object> map, String quoteName) {
         Map<String, Object> quote = (Map<String, Object>)map.get(quoteName);
-        Double dPrice = (Double)quote.get("val");
+        Double dPrice = Double.valueOf("" + (quote.get("val")).toString());
         double price = dPrice.doubleValue();
         double rounded = 0.0;
 
