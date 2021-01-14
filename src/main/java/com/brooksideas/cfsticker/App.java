@@ -787,7 +787,12 @@ public class App {
         Map<String, Object> data = (Map<String, Object>)map.get("data");
         Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
         Integer iRank = (Integer)symbolData.get("cmc_rank");
-        int rank = iRank.intValue();
+        int rank = 0;
+
+        if (iRank != null) {
+            rank = iRank.intValue();
+        }
+
         return rank;
     }
 
