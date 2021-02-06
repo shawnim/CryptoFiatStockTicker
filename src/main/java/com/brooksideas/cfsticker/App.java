@@ -786,8 +786,13 @@ public class App {
     private int getCryptoRank(Map<String, Object> map, String symbol) {
         Map<String, Object> data = (Map<String, Object>)map.get("data");
         Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
-        Integer iRank = (Integer)symbolData.get("cmc_rank");
         int rank = 0;
+
+        if (symbolData == null) {
+            return rank;
+        }
+
+        Integer iRank = (Integer)symbolData.get("cmc_rank");
 
         if (iRank != null) {
             rank = iRank.intValue();
