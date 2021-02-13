@@ -802,13 +802,28 @@ public class App {
     }
 
     private double getCryptoPrice(Map<String, Object> map, String symbol) {
+        double rounded = 0.0d;
         Map<String, Object> data = (Map<String, Object>)map.get("data");
         Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
+
+        if (symbolData == null) {
+            return rounded;
+        }
+
         Map<String, Object> quote = (Map<String, Object>)symbolData.get("quote");
+
+        if (quote == null) {
+            return rounded;
+        }
+
         Map<String, Object> usd = (Map<String, Object>)quote.get("USD");
+
+        if (usd == null) {
+            return rounded;
+        }
+
         Double dPrice = Double.valueOf("" + (usd.get("price")).toString());
         double price = dPrice.doubleValue();
-        double rounded = 0.0;
 
         if (price >= 100.0) {
             rounded = Math.round(price);
