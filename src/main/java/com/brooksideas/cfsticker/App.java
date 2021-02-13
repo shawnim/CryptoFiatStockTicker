@@ -840,18 +840,39 @@ public class App {
      * Returns market cap in millions with 2 decimal places.
      */
     private double getCryptoMarketCap(Map<String, Object> map, String symbol) {
+        double roundedM = 0.0d;
         Map<String, Object> data = (Map<String, Object>)map.get("data");
+
+        if (data == null) {
+            return roundedM;
+        }
+
         Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
+
+        if (symbolData == null) {
+            return roundedM;
+        }
+
         Map<String, Object> quote = (Map<String, Object>)symbolData.get("quote");
+
+        if (quote == null) {
+            return roundedM;
+        }
+
         Map<String, Object> usd = (Map<String, Object>)quote.get("USD");
+
+        if (usd == null) {
+            return roundedM;
+        }
+
         Double dMarketCap = Double.valueOf("" + (usd.get("market_cap")).toString());
 
         if (dMarketCap == null) {
-            return 0.0;
+            return roundedM;
         }
 
         double marketCap = dMarketCap.doubleValue();
-        double roundedM = Math.round(marketCap / 10000.0) / 100.0;
+        roundedM = Math.round(marketCap / 10000.0) / 100.0;
         return roundedM;
     }
 
