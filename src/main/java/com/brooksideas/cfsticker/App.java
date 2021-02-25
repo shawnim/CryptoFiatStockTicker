@@ -877,18 +877,24 @@ public class App {
     }
 
     private double getCryptoPercentChange24h(Map<String, Object> map, String symbol) {
+        double percentChange24h = 0.0d;
         Map<String, Object> data = (Map<String, Object>)map.get("data");
         Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
+
+        if (symbolData == null) {
+            return percentChange24h;
+        }
+
         Map<String, Object> quote = (Map<String, Object>)symbolData.get("quote");
         Map<String, Object> usd = (Map<String, Object>)quote.get("USD");
         Double dPercentChange24h = Double.valueOf("" + (usd.get("percent_change_24h")).toString());
 
         if (dPercentChange24h == null) {
-            return 0.0;
+            return percentChange24h;
         }
 
         // cmc 5% = 5.0
-        double percentChange24h = dPercentChange24h.doubleValue();
+        percentChange24h = dPercentChange24h.doubleValue();
         return percentChange24h;
     }
 
