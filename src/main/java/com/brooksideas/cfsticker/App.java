@@ -865,7 +865,13 @@ public class App {
             return roundedM;
         }
 
-        Double dMarketCap = Double.valueOf("" + (usd.get("market_cap")).toString());
+        Object oMarketCap = usd.get("market_cap");
+
+        if (oMarketCap == null) {
+            return roundedM;
+        }
+
+        Double dMarketCap = Double.valueOf("" + oMarketCap.toString());
 
         if (dMarketCap == null) {
             return roundedM;
