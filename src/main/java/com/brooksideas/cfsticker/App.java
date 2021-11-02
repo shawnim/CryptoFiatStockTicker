@@ -893,7 +893,13 @@ public class App {
 
         Map<String, Object> quote = (Map<String, Object>)symbolData.get("quote");
         Map<String, Object> usd = (Map<String, Object>)quote.get("USD");
-        Double dPercentChange24h = Double.valueOf("" + (usd.get("percent_change_24h")).toString());
+        Object oPercentChange24h = usd.get("percent_change_24h");
+
+        if (oPercentChange24h == null) {
+            return percentChange24h;
+        }
+
+        Double dPercentChange24h = Double.valueOf("" + oPercentChange24h.toString());
 
         if (dPercentChange24h == null) {
             return percentChange24h;
