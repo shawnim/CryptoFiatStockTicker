@@ -1,5 +1,5 @@
 
-CryptoFiatStockicker 2.0
+CryptoFiatStockTicker 2.1
 
 Desktop ticker for cryptocurrencies, fiat/forex and stocks.
 

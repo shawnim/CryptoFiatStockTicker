@@ -51,8 +51,8 @@ public class App {
     private static final String cmcTickerUrl = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=";
     // XXX Should use header X-CMC_PRO_API_KEY instead of query arg
     private static final String cmcTailUrl = "&convert=USD&aux=cmc_rank,market_cap_by_total_supply&CMC_PRO_API_KEY=" + cmcApiKey;
-    private static final String ccaBaseUrl = "https://free.currencyconverterapi.com/api/v6/convert?q=";
-    private static final String ccaTailUrl = "_USD&compact=y&apiKey=" + ccaApiKey;
+    private static final String ccaBaseUrl = "https://free.currconv.com/api/v7/convert?q=";
+    private static final String ccaTailUrl = "_USD&compact=ultra&apiKey=" + ccaApiKey;
     private static final String iexBaseUrl = "https://cloud.iexapis.com/v1/stock/";
     private static final String iexTailUrl = "/quote/?token=" + iexApiKey;
     private static final String cryptoRadioLabel = "Crypto";
@@ -912,8 +912,7 @@ public class App {
     }
 
     private double getFiatPrice(Map<String, Object> map, String quoteName) {
-        Map<String, Object> quote = (Map<String, Object>)map.get(quoteName);
-        Double dPrice = Double.valueOf("" + (quote.get("val")).toString());
+        Double dPrice = Double.valueOf("" + (map.get(quoteName)).toString());
         double price = dPrice.doubleValue();
         double rounded = 0.0;
 
