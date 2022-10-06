@@ -1,6 +1,6 @@
 {
   "updateIntervalSeconds" : 300,
-  "cryptos" : [ "ADA", "BTC", "DOT", "ETH", "SOL", "XRP" ],
+  "cryptos" : [ "ADA", "BNB", "BTC", "C3", "ETH", "CLAY", "PAVIA", "SOL", "SUNDAE", "WMT", "XRP" ],
   "fiats" : [ "CAD", "EUR", "GBP", "MXN" ],
-  "stocks" : [ "COIN", "IMGN", "QQQ", "RBLX" ]
+  "stocks" : [ "COIN", "IMGN", "JOBY", "QQQ", "RBLX" ]
 }
