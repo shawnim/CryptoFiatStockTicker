@@ -45,7 +45,8 @@ public class App {
     // XXX To get cmc api key sign up at
     // XXX https://pro.coinmarketcap.com/signup/?plan=0
     private static final String cmcApiKey = "5c25d932-696d-4113-8fbf-36848aa95d61";
-    private static final String ccaApiKey = "4524e732bd5b0a125958";
+    //private static final String ccaApiKey = "4524e732bd5b0a125958";
+    private static final String ccaApiKey = "348a6687b5cc2deb5835";
     private static final String iexApiKey = "pk_23b0042f655a4a729318ddac580d182b";
     private static final String cmcTickerUrl = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=";
     // XXX Should use header X-CMC_PRO_API_KEY instead of query arg
@@ -786,19 +787,44 @@ public class App {
     private int getCryptoRank(Map<String, Object> map, String symbol) {
         Map<String, Object> data = (Map<String, Object>)map.get("data");
         Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
+        int rank = 0;
+
+        if (symbolData == null) {
+            return rank;
+        }
+
         Integer iRank = (Integer)symbolData.get("cmc_rank");
-        int rank = iRank.intValue();
+
+        if (iRank != null) {
+            rank = iRank.intValue();
+        }
+
         return rank;
     }
 
     private double getCryptoPrice(Map<String, Object> map, String symbol) {
+        double rounded = 0.0d;
         Map<String, Object> data = (Map<String, Object>)map.get("data");
         Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
+
+        if (symbolData == null) {
+            return rounded;
+        }
+
         Map<String, Object> quote = (Map<String, Object>)symbolData.get("quote");
+
+        if (quote == null) {
+            return rounded;
+        }
+
         Map<String, Object> usd = (Map<String, Object>)quote.get("USD");
+
+        if (usd == null) {
+            return rounded;
+        }
+
         Double dPrice = Double.valueOf("" + (usd.get("price")).toString());
         double price = dPrice.doubleValue();
-        double rounded = 0.0;
 
         if (price >= 100.0) {
             rounded = Math.round(price);
@@ -815,34 +841,73 @@ public class App {
      * Returns market cap in millions with 2 decimal places.
      */
     private double getCryptoMarketCap(Map<String, Object> map, String symbol) {
+        double roundedM = 0.0d;
         Map<String, Object> data = (Map<String, Object>)map.get("data");
+
+        if (data == null) {
+            return roundedM;
+        }
+
         Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
+
+        if (symbolData == null) {
+            return roundedM;
+        }
+
         Map<String, Object> quote = (Map<String, Object>)symbolData.get("quote");
+
+        if (quote == null) {
+            return roundedM;
+        }
+
         Map<String, Object> usd = (Map<String, Object>)quote.get("USD");
-        Double dMarketCap = Double.valueOf("" + (usd.get("market_cap")).toString());
+
+        if (usd == null) {
+            return roundedM;
+        }
+
+        Object oMarketCap = usd.get("market_cap");
+
+        if (oMarketCap == null) {
+            return roundedM;
+        }
+
+        Double dMarketCap = Double.valueOf("" + oMarketCap.toString());
 
         if (dMarketCap == null) {
-            return 0.0;
+            return roundedM;
         }
 
         double marketCap = dMarketCap.doubleValue();
-        double roundedM = Math.round(marketCap / 10000.0) / 100.0;
+        roundedM = Math.round(marketCap / 10000.0) / 100.0;
         return roundedM;
     }
 
     private double getCryptoPercentChange24h(Map<String, Object> map, String symbol) {
+        double percentChange24h = 0.0d;
         Map<String, Object> data = (Map<String, Object>)map.get("data");
         Map<String, Object> symbolData = (Map<String, Object>)data.get(symbol);
+
+        if (symbolData == null) {
+            return percentChange24h;
+        }
+
         Map<String, Object> quote = (Map<String, Object>)symbolData.get("quote");
         Map<String, Object> usd = (Map<String, Object>)quote.get("USD");
-        Double dPercentChange24h = Double.valueOf("" + (usd.get("percent_change_24h")).toString());
+        Object oPercentChange24h = usd.get("percent_change_24h");
+
+        if (oPercentChange24h == null) {
+            return percentChange24h;
+        }
+
+        Double dPercentChange24h = Double.valueOf("" + oPercentChange24h.toString());
 
         if (dPercentChange24h == null) {
-            return 0.0;
+            return percentChange24h;
         }
 
         // cmc 5% = 5.0
-        double percentChange24h = dPercentChange24h.doubleValue();
+        percentChange24h = dPercentChange24h.doubleValue();
         return percentChange24h;
     }
 
