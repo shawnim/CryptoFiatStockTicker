@@ -45,8 +45,8 @@ public class App {
     // XXX To get cmc api key sign up at
     // XXX https://pro.coinmarketcap.com/signup/?plan=0
     private static final String cmcApiKey = "5c25d932-696d-4113-8fbf-36848aa95d61";
-    //private static final String ccaApiKey = "4524e732bd5b0a125958";
-    private static final String ccaApiKey = "a3a76b1a829d048c0701";
+    //private static final String ccaApiKey = "a3a76b1a829d048c0701";
+    private static final String ccaApiKey = "a5af653c83bc54ceeb0e";
     private static final String iexApiKey = "pk_23b0042f655a4a729318ddac580d182b";
     private static final String cmcTickerUrl = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=";
     // XXX Should use header X-CMC_PRO_API_KEY instead of query arg
