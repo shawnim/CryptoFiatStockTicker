@@ -7,12 +7,24 @@ import java.util.ArrayList;
  */
 public class Config {
     private int updateIntervalSeconds;
+    private String ccaApiKey;
+    private String cmcApiKey;
+    private String iexApiKey;
     private ArrayList<String> cryptos;
     private ArrayList<String> fiats;
     private ArrayList<String> stocks;
 
     public int getUpdateIntervalSeconds() { return updateIntervalSeconds; }
     public void setUpdateIntervalSeconds(int x) { updateIntervalSeconds = x; }
+
+    public String getCcaApiKey() { return ccaApiKey; }
+    public void setCcaApiKey(String x) { ccaApiKey = x; }
+
+    public String getCmcApiKey() { return cmcApiKey; }
+    public void setCmcApiKey(String x) { cmcApiKey = x; }
+
+    public String getIexApiKey() { return iexApiKey; }
+    public void setIexApiKey(String x) { iexApiKey = x; }
 
     public ArrayList<String> getCryptos() {
         if (cryptos == null) {

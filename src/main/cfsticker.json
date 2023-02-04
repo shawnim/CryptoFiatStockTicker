@@ -1,6 +1,9 @@
 {
   "updateIntervalSeconds" : 300,
-  "cryptos" : [ "ADA", "BNB", "BTC", "C3", "ETH", "INDY", "PAVIA", "SOL", "SUNDAE", "WMT", "XRP" ],
+  "ccaApiKey" : "YourCCAAPIKey",
+  "cmcApiKey" : "YourCMCAPIKey",
+  "iexApiKey" : "YourIEXAPIKey",
+  "cryptos" : [ "ADA", "BNB", "BTC", "C3", "ETH", "INDY", "SOL", "SUNDAE", "WMT", "XRP" ],
   "fiats" : [ "CAD", "EUR", "GBP", "MXN" ],
   "stocks" : [ "COIN", "IMGN", "JOBY", "QQQ", "RBLX" ]
 }

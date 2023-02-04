@@ -41,20 +41,13 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  *
  */
 public class App {
-    // XXX add configuration for people to set their own keys
-    // XXX To get cmc api key sign up at
-    // XXX https://pro.coinmarketcap.com/signup/?plan=0
-    private static final String cmcApiKey = "5c25d932-696d-4113-8fbf-36848aa95d61";
-    //private static final String ccaApiKey = "a3a76b1a829d048c0701";
-    private static final String ccaApiKey = "a5af653c83bc54ceeb0e";
-    private static final String iexApiKey = "pk_23b0042f655a4a729318ddac580d182b";
     private static final String cmcTickerUrl = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=";
     // XXX Should use header X-CMC_PRO_API_KEY instead of query arg
-    private static final String cmcTailUrl = "&convert=USD&aux=cmc_rank,market_cap_by_total_supply&CMC_PRO_API_KEY=" + cmcApiKey;
+    private static final String cmcTailUrl = "&convert=USD&aux=cmc_rank,market_cap_by_total_supply&CMC_PRO_API_KEY=";
     private static final String ccaBaseUrl = "https://free.currconv.com/api/v7/convert?q=";
-    private static final String ccaTailUrl = "_USD&compact=ultra&apiKey=" + ccaApiKey;
+    private static final String ccaTailUrl = "_USD&compact=ultra&apiKey=";
     private static final String iexBaseUrl = "https://cloud.iexapis.com/v1/stock/";
-    private static final String iexTailUrl = "/quote/?token=" + iexApiKey;
+    private static final String iexTailUrl = "/quote/?token=";
     private static final String cryptoRadioLabel = "Crypto";
     private static final String fiatRadioLabel = "Fiat";
     private static final String stockRadioLabel = "Stock";
@@ -89,6 +82,9 @@ public class App {
     private boolean isStock;
     private int gridx;
     private int updateIntervalSeconds;
+    private String cmcApiKey;
+    private String ccaApiKey;
+    private String iexApiKey;
 
     public static void main(String[] args) {
         App app = new App();
@@ -112,8 +108,8 @@ public class App {
         }
 
         // Colors
-        upColor = new Color(0x00ff00);
-        downColor = new Color(0xff0000);
+        upColor = new Color(0x22ff22);
+        downColor = new Color(0xff2222);
 
         // Update quotes interval in seconds
         int secs = config.getUpdateIntervalSeconds();
@@ -123,6 +119,10 @@ public class App {
         } else {
             updateIntervalSeconds = secs;
         }
+
+        ccaApiKey = config.getCcaApiKey();
+        cmcApiKey = config.getCmcApiKey();
+        iexApiKey = config.getIexApiKey();
 
         // Initial cryptos
         cryptoQuotes = new TreeMap<String, CryptoQuote>();
@@ -446,7 +446,7 @@ public class App {
 
             // XXX Build comma separated list and get all with one url
             try {
-                url = new URL(cmcTickerUrl + symbol + cmcTailUrl);
+                url = new URL(cmcTickerUrl + symbol + cmcTailUrl + cmcApiKey);
             } catch (MalformedURLException mfue) {
                 System.err.println(mfue);
                 continue;
@@ -498,8 +498,7 @@ public class App {
             fiatQuote = entry.getValue();
 
             try {
-                String ccaUrl = ccaBaseUrl + symbol + ccaTailUrl;
-                url = new URL(ccaUrl);
+                url = new URL(ccaBaseUrl + symbol + ccaTailUrl + ccaApiKey);
             } catch (MalformedURLException mfue) {
                 System.err.println(mfue);
                 continue;
@@ -536,8 +535,7 @@ public class App {
             stockQuote = entry.getValue();
 
             try {
-                String iexUrl = iexBaseUrl + symbol + iexTailUrl;
-                url = new URL(iexUrl);
+                url = new URL(iexBaseUrl + symbol + iexTailUrl + iexApiKey);
             } catch (MalformedURLException mfue) {
                 System.err.println(mfue);
                 continue;
